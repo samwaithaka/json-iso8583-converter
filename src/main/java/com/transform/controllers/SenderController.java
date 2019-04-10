@@ -7,12 +7,16 @@ import com.transform.logging.CustomLogger;
 import com.transform.messages.MessageFactory;
 import com.transform.utils.HTTPClient;
 import com.transform.utils.MessageClient;
+import com.transform.utils.NetworkEchoSender;
 
 public class SenderController {
 	private static String isoToJSONURL = "http://localhost:8080/iso-to-json";
 	private static String JSONToIsoURL = "http://localhost:8080/json-to-iso";
 	private static int stan = (int)(Math.random() * 9999 + 1);
 	public static void main(String[] args) {
+		NetworkEchoSender networker = new NetworkEchoSender();
+		networker.start();
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}
 		//sendSignOnMessage();
 		sendAccountToCardMessage();
 		// Send send to card message
@@ -74,7 +78,8 @@ public class SenderController {
 		System.out.println(accToCardTransactionIsoMessage);	
 		CustomLogger.log("INFO", new Timestamp(System.currentTimeMillis()) + " > Acc to Card request: " + accToCardTransactionIsoMessage);
 		// Post
-		String response = MessageClient.send("10.185.13.94", 6342, accToCardTransactionIsoMessage);
+		//String response = MessageClient.send("10.185.13.94", 6342, accToCardTransactionIsoMessage);
+		String response = accToCardTransactionIsoMessage;
 		// Get response
 		CustomLogger.log("INFO", new Timestamp(System.currentTimeMillis()) + " > Acc to Card response: " + response);
 		System.out.println(getJSONMessage(response));

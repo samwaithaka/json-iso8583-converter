@@ -2,6 +2,8 @@ package com.transform.utils;
 
 import java.sql.Timestamp;
 
+import org.json.JSONObject;
+
 import com.transform.logging.CustomLogger;
 import com.transform.messages.MessageFactory;
 
@@ -10,10 +12,7 @@ public class NetworkEchoSender extends Thread {
 	private static String isoToJSONURL = "http://localhost:8080/iso-to-json";
 	private static String JSONToIsoURL = "http://localhost:8080/json-to-iso";
 	
-	public static void main(String[] args) {
-		call();
-	}
-	public static void call() {
+	public void run() {
 		int i = 0;
 		while(true) {
 			try {
@@ -25,13 +24,19 @@ public class NetworkEchoSender extends Thread {
 				String isoMessage = getIsoMessage(echoMessage);
 				CustomLogger.log("INFO", new Timestamp(System.currentTimeMillis()) + " > echo request: " + isoMessage);
 				// Post
-				String response = MessageClient.send("10.185.13.94", 6342, isoMessage);
+				//String response = MessageClient.send("10.185.13.94", 6342, isoMessage);
+				String response = isoMessage;
 				// Get response
 				CustomLogger.log("INFO", new Timestamp(System.currentTimeMillis()) + " > echo response: " + response);
-				System.out.println(getJSONMessage(response));
+				String jsonString = getJSONMessage(response);
+				System.out.println(jsonString);
+				JSONObject jsonResponse =new JSONObject(jsonString);
+				if(!jsonResponse.get("24").toString().equalsIgnoreCase("801")) {
+					sendSignOnMessage();
+				}
 				if(i == 10) break;
 				i++;
-				Thread.sleep(10000);
+				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -47,11 +52,16 @@ public class NetworkEchoSender extends Thread {
 		String signOnMessage = MessageFactory.createNetworkRequest(MTI, field11, field24);
 		String signOnIsoMessage = getIsoMessage(signOnMessage);
 		CustomLogger.log("INFO", new Timestamp(System.currentTimeMillis()) + " > Signon request: " + signOnIsoMessage);
-		String response = MessageClient.send("10.185.13.94", 6342, signOnIsoMessage);
+		////String response = MessageClient.send("10.185.13.94", 6342, signOnIsoMessage);
+		String response = signOnIsoMessage;
 		// Get response
 		CustomLogger.log("INFO", new Timestamp(System.currentTimeMillis()) + " > Signon response: " + response);
-		System.out.println(getJSONMessage(response));
-		System.out.println(signOnIsoMessage);		
+		String jsonString = getJSONMessage(response);
+		System.out.println(jsonString);
+		JSONObject jsonResponse =new JSONObject(jsonString);
+		//System.out.println(jsonResponse);
+		System.out.println(jsonResponse.get("24"));
+		//System.out.println(signOnIsoMessage);		
 	}
 
 	public static String getIsoMessage(String message) {
